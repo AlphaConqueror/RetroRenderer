@@ -1,0 +1,23 @@
+build
+bin
+
+extracted.proof
+
+# image files
+*.ppm
+*.pgm
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.PPM
+*.PGM
+*.PNG
+*.JPG
+*.JPEG
+*.BMP
+
+
+*.o
+*~
+
