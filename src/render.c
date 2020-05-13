@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <math.h>
 
 #include "util.h"
 
@@ -26,12 +27,57 @@ float float_mod(float f, int k) {
     return res;
 }
 
+float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
+    float result = f;
+    
+    if(f < 0)
+        result = fSmaller0;
+    else if(f > k)
+        result = fBiggerK;
+    
+    return result;
+}
+
 /** Move the player according to its velocities.
  */
 void update_player(player_t* p, ctx_t const* ctx) {
-    NOT_IMPLEMENTED;
-    UNUSED(p);
-    UNUSED(ctx);
+    float x = p->x, y = p->y;
+    int angle = p->angle,
+        velocity = p->v,
+        height = p->height;
+        
+    //A1.1 + angle in [0,360]
+    angle += p->v_angular;
+    
+    angle = boundaries(angle, 360, angle + 360, angle - 360);
+    
+    p->angle = angle;
+    
+    //A1.2
+    if(velocity != 0) {
+        int map_size = ctx->map_size;
+        
+        x += cos(angle * PI/180) * velocity;
+        y -= sin(angle * PI/180) * velocity;
+        
+        x = boundaries(x, map_size, 0, map_size);
+        y = boundaries(y, map_size, 0, map_size);
+        
+        p->x = x;
+        p->y = y;
+    }
+    
+    //A1.3
+    uint8_t *mapBaseAddress = ctx->height_map;
+    int roundedX = (int) x, roundedY = (int) y;
+    int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
+
+    height += p->v_height;
+    
+    if(height < mapHeightAtCoords + 20)
+        height = mapHeightAtCoords + 20;
+    
+    p->height = height;
 }
 
 /** Draw a vertical line into the context's out buffer in the screen column u
@@ -44,20 +90,26 @@ void update_player(player_t* p, ctx_t const* ctx) {
  *  are 1-based.
  */
 void draw_line(ctx_t* c, int u, int v_from, int v_to, uint32_t color) {
-    NOT_IMPLEMENTED;
-    UNUSED(c);
-    UNUSED(u);
-    UNUSED(v_from);
-    UNUSED(v_to);
-    UNUSED(color);
+    //A.2
+    int height = c->scr_height,
+        width = c->scr_width;
+    uint32_t* buffer = c->out;
+    
+    for(int i = height - v_to; i <= height - v_from - 1; i++) {
+        buffer[i * width + u - 1] = color;
+    }
 }
 
 /** Render the scene from player's perspective into the context's out buffer.
  */
 void render(const player_t* p, ctx_t* c) {
-    NOT_IMPLEMENTED;
-    UNUSED(p);
-    UNUSED(c);
+    //A.3
+    int height = c->scr_height,
+        width = c->scr_width;
+    
+    for(int i = 1; i <= width; i++) {
+        draw_line(c, i, 0, height, c->sky_color);
+    }
 }
 
 int bonus_implemented(void) {
