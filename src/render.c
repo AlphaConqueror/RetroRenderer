@@ -44,7 +44,8 @@ void update_player(player_t* p, ctx_t const* ctx) {
     float x = p->x, y = p->y;
     int angle = p->angle,
         velocity = p->v,
-        height = p->height;
+        height = p->height,
+        map_size = ctx->map_size;
         
     //A1.1 + angle in [0,360]
     angle += p->v_angular;
@@ -55,8 +56,6 @@ void update_player(player_t* p, ctx_t const* ctx) {
     
     //A1.2
     if(velocity != 0) {
-        int map_size = ctx->map_size;
-        
         x += cos(angle * PI/180) * velocity;
         y -= sin(angle * PI/180) * velocity;
         
@@ -68,9 +67,10 @@ void update_player(player_t* p, ctx_t const* ctx) {
     }
     
     //A1.3
-    uint8_t *mapBaseAddress = ctx->height_map;
+    uint8_t *height_map = ctx->height_map;
     int roundedX = (int) x, roundedY = (int) y;
-    int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
+    //int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
+    int mapHeightAtCoords = height_map[roundedX + roundedY * map_size];
 
     height += p->v_height;
     
@@ -110,6 +110,8 @@ void render(const player_t* p, ctx_t* c) {
     for(int i = 1; i <= width; i++) {
         draw_line(c, i, 0, height, c->sky_color);
     }
+    
+    UNUSED(p);
 }
 
 int bonus_implemented(void) {
