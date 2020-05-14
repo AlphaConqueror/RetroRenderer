@@ -93,8 +93,8 @@ void update_player(player_t* p, ctx_t const* ctx) {
         x += cos(angle * PI/180) * velocity;
         y -= sin(angle * PI/180) * velocity;
         
-        x = boundaries(x, map_size, 0, map_size - 1);
-        y = boundaries(y, map_size, 0, map_size - 1);
+        x = boundaries(x, map_size - 1, 0, map_size - 1);
+        y = boundaries(y, map_size - 1, 0, map_size - 1);
         
         p->x = x;
         p->y = y;
