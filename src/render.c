@@ -27,6 +27,11 @@ float float_mod(float f, int k) {
     return res;
 }
 
+//struct containing all endpoints
+typedef struct {
+    float Lx, Ly, Rx, Ry;
+} endpoints_t;
+
 float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
     float result = f;
     
@@ -36,6 +41,35 @@ float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
         result = fBiggerK;
     
     return result;
+}
+
+int getHeightAtCoords(float x, float y, const ctx_t* c) {
+    return c->height_map[(int) x + (int) y * c->map_size];
+}
+
+//calculates the endpoints with the available data
+endpoints_t getEndpoints(const player_t* p, int distance) {
+    int angle = p->angle;
+    float x = p->x,
+          y = p->y,
+          a = cos(angle) * distance,
+          b = sin(angle) * distance;
+    endpoints_t e = {x + a - b, y - b - a, x + a - b, y - b + a};
+    
+    return e;
+}
+
+//calculates the displayed height at a certain point
+int getDisplayedHeight(float x, float y, const player_t* p, const ctx_t* c, int distance) {
+    return (c->scr_width/2) * ((getHeightAtCoords(x, y, c) - p->height)/distance) + (c->scr_height/2);
+}
+
+int min(int a, int b) {
+    return a < b ? a : b;
+}
+
+int max(int a, int b) {
+    return a > b ? a : b;
 }
 
 /** Move the player according to its velocities.
@@ -67,10 +101,10 @@ void update_player(player_t* p, ctx_t const* ctx) {
     }
     
     //A1.3
-    uint8_t *height_map = ctx->height_map;
-    int roundedX = (int) x, roundedY = (int) y;
+    //uint8_t *height_map = ctx->height_map;
+    //int roundedX = (int) x, roundedY = (int) y;
     //int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
-    int mapHeightAtCoords = height_map[roundedX + roundedY * map_size];
+    int mapHeightAtCoords = getHeightAtCoords(x, y, ctx);
 
     height += p->v_height;
     
@@ -105,13 +139,21 @@ void draw_line(ctx_t* c, int u, int v_from, int v_to, uint32_t color) {
 void render(const player_t* p, ctx_t* c) {
     //A.3
     int height = c->scr_height,
-        width = c->scr_width;
+        width = c->scr_width,
+        distance = c->distance;
     
+    //initializing screen in sky color
     for(int i = 1; i <= width; i++) {
         draw_line(c, i, 0, height, c->sky_color);
     }
     
-    UNUSED(p);
+    for(int i = distance; i >= 0; i--) {
+        endpoints_t e = getEndpoints(p, i);
+        
+        for(int i = min(e.Lx, e.Rx) + 1; i <= max(e.Lx, e.Rx) + 1; i++) {
+            
+        }
+    }
 }
 
 int bonus_implemented(void) {
