@@ -43,8 +43,12 @@ float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
     return result;
 }
 
-int getHeightAtCoords(float x, float y, const ctx_t* c) {
+float getHeightAtCoords(float x, float y, const ctx_t* c) {
     return c->height_map[(int) x + (int) y * c->map_size];
+}
+
+uint32_t getColorAtCoords(float x, float y, const ctx_t* c) {
+    return c->color_map[(int) x + (int) y * c->map_size];
 }
 
 //calculates the endpoints with the available data
@@ -60,7 +64,7 @@ endpoints_t getEndpoints(const player_t* p, int distance) {
 }
 
 //calculates the displayed height at a certain point
-int getDisplayedHeight(float x, float y, const player_t* p, const ctx_t* c, int distance) {
+float getDisplayedHeight(float x, float y, const player_t* p, const ctx_t* c, int distance) {
     return (c->scr_width/2) * ((getHeightAtCoords(x, y, c) - p->height)/distance) + (c->scr_height/2);
 }
 
@@ -81,10 +85,10 @@ void update_player(player_t* p, ctx_t const* ctx) {
         height = p->height,
         map_size = ctx->map_size;
         
-    //A1.1 + angle in [0,360]
+    //A1.1 + angle in [0,360[
     angle += p->v_angular;
     
-    angle = boundaries(angle, 360, angle + 360, angle - 360);
+    angle = boundaries(angle, 359, angle + 360, angle - 360);
     
     p->angle = angle;
     
@@ -93,8 +97,8 @@ void update_player(player_t* p, ctx_t const* ctx) {
         x += cos(angle * PI/180) * velocity;
         y -= sin(angle * PI/180) * velocity;
         
-        x = boundaries(x, map_size - 1, 0, map_size - 1);
-        y = boundaries(y, map_size - 1, 0, map_size - 1);
+        x = float_mod(x, map_size);
+        y = float_mod(y, map_size);
         
         p->x = x;
         p->y = y;
@@ -104,6 +108,7 @@ void update_player(player_t* p, ctx_t const* ctx) {
     //uint8_t *height_map = ctx->height_map;
     //int roundedX = (int) x, roundedY = (int) y;
     //int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
+    
     int mapHeightAtCoords = getHeightAtCoords(x, y, ctx);
 
     height += p->v_height;
@@ -147,12 +152,18 @@ void render(const player_t* p, ctx_t* c) {
         draw_line(c, i, 0, height, c->sky_color);
     }
     
-    for(int i = distance; i >= 0; i--) {
+    for(int i = distance; i > 0; i--) {
         endpoints_t e = getEndpoints(p, i);
         
-        for(int i = min(e.Lx, e.Rx) + 1; i <= max(e.Lx, e.Rx) + 1; i++) {
+        UNUSED(e);
+        
+        /*for(int j = min(e.Lx, e.Rx) + 1; j <= max(e.Lx, e.Rx) + 1; j++) {
+            //TODO: Fix error in scr coords -> map coords (height/color)
             
-        }
+            float Qu =  -1 * ((e.Ry - e.Ly)/(e.Lx - e.Rx)) * (j - e.Lx) + e.Ly;
+            
+            draw_line(c, j, 0, getDisplayedHeight(j, Qu, p, c, i), getColorAtCoords(j, Qu, c));
+        }*/
     }
 }
 
