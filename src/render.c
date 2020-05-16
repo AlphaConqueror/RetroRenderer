@@ -32,6 +32,10 @@ typedef struct {
     float Lx, Ly, Rx, Ry;
 } endpoints_t;
 
+typedef struct {
+    float x, y;
+} vec_t;
+
 float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
     float result = f;
     
@@ -58,7 +62,7 @@ endpoints_t getEndpoints(const player_t* p, int distance) {
           y = p->y,
           a = cos(angle) * distance,
           b = sin(angle) * distance;
-    endpoints_t e = {x + a - b, y - b - a, x + a - b, y - b + a};
+    endpoints_t e = {x + a - b, y - b - a, x + a + b, y - b + a};
     
     return e;
 }
@@ -66,14 +70,6 @@ endpoints_t getEndpoints(const player_t* p, int distance) {
 //calculates the displayed height at a certain point
 float getDisplayedHeight(float x, float y, const player_t* p, const ctx_t* c, int distance) {
     return (c->scr_width/2) * ((getHeightAtCoords(x, y, c) - p->height)/distance) + (c->scr_height/2);
-}
-
-int min(int a, int b) {
-    return a < b ? a : b;
-}
-
-int max(int a, int b) {
-    return a > b ? a : b;
 }
 
 /** Move the player according to its velocities.
@@ -105,10 +101,6 @@ void update_player(player_t* p, ctx_t const* ctx) {
     }
     
     //A1.3
-    //uint8_t *height_map = ctx->height_map;
-    //int roundedX = (int) x, roundedY = (int) y;
-    //int mapHeightAtCoords = *(mapBaseAddress + (int) (roundedX * roundedY < 0 ? 0 : roundedX * roundedY - 1));
-    
     int mapHeightAtCoords = getHeightAtCoords(x, y, ctx);
 
     height += p->v_height;
@@ -145,7 +137,8 @@ void render(const player_t* p, ctx_t* c) {
     //A.3
     int height = c->scr_height,
         width = c->scr_width,
-        distance = c->distance;
+        distance = c->distance,
+        map_size = c->map_size;
     
     //initializing screen in sky color
     for(int i = 1; i <= width; i++) {
@@ -154,16 +147,14 @@ void render(const player_t* p, ctx_t* c) {
     
     for(int i = distance; i > 0; i--) {
         endpoints_t e = getEndpoints(p, i);
+        vec_t vec = {(e.Rx - e.Lx)/width, (e.Ry - e.Ly)/width};
         
-        UNUSED(e);
-        
-        /*for(int j = min(e.Lx, e.Rx) + 1; j <= max(e.Lx, e.Rx) + 1; j++) {
-            //TODO: Fix error in scr coords -> map coords (height/color)
+        for(int j = 0; j <= width; j++) {
+            vec_t pos = {e.Lx + j * vec.x, e.Ly + j * vec.y};
             
-            float Qu =  -1 * ((e.Ry - e.Ly)/(e.Lx - e.Rx)) * (j - e.Lx) + e.Ly;
-            
-            draw_line(c, j, 0, getDisplayedHeight(j, Qu, p, c, i), getColorAtCoords(j, Qu, c));
-        }*/
+            if(pos.x >= 0 && pos.x <= map_size - 1 && pos.y >= 0 && pos.y <= map_size - 1)
+                draw_line(c, (int) (pos.x * ((float) width)/(map_size - 1)), 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
+        }
     }
 }
 
