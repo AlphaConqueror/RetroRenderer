@@ -145,15 +145,14 @@ void render(const player_t* p, ctx_t* c) {
         draw_line(c, i, 0, height, c->sky_color);
     }
     
-    for(int i = distance; i > 0; i--) {
+    for(int i = distance - 1; i > 0; i--) {
         endpoints_t e = getEndpoints(p, i);
         vec_t vec = {(e.Rx - e.Lx)/width, (e.Ry - e.Ly)/width};
         
         for(int j = 0; j <= width; j++) {
-            vec_t pos = {e.Lx + j * vec.x, e.Ly + j * vec.y};
+            vec_t pos = {float_mod(e.Lx + j * vec.x, map_size), float_mod(e.Ly + j * vec.y, map_size)};
             
-            if(pos.x >= 0 && pos.x <= map_size - 1 && pos.y >= 0 && pos.y <= map_size - 1)
-                draw_line(c, (int) (pos.x * ((float) width)/(map_size - 1)), 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
+            draw_line(c, (int) (pos.x * ((float) width)/(map_size - 1)), 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
         }
     }
 }
