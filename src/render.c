@@ -36,17 +36,6 @@ typedef struct {
     float x, y;
 } vec_t;
 
-float boundaries(float f, float k, float fSmaller0, float fBiggerK) {
-    float result = f;
-    
-    if(f < 0)
-        result = fSmaller0;
-    else if(f > k)
-        result = fBiggerK;
-    
-    return result;
-}
-
 float getHeightAtCoords(float x, float y, const ctx_t* c) {
     return c->height_map[(int) x + (int) y * c->map_size];
 }
@@ -60,8 +49,8 @@ endpoints_t getEndpoints(const player_t* p, int distance) {
     int angle = p->angle;
     float x = p->x,
           y = p->y,
-          a = cos(angle) * distance,
-          b = sin(angle) * distance;
+          a = cos(angle * PI/180) * distance,
+          b = sin(angle * PI/180) * distance;
     endpoints_t e = {x + a - b, y - b - a, x + a + b, y - b + a};
     
     return e;
@@ -84,7 +73,7 @@ void update_player(player_t* p, ctx_t const* ctx) {
     //A1.1 + angle in [0,360[
     angle += p->v_angular;
     
-    angle = boundaries(angle, 359, angle + 360, angle - 360);
+    angle = float_mod(angle, 360);
     
     p->angle = angle;
     
