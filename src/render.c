@@ -134,14 +134,16 @@ void render(const player_t* p, ctx_t* c) {
         draw_line(c, i, 0, height, c->sky_color);
     }
     
+    //für jede Entfernung d < D, absteigend
     for(int i = distance - 1; i > 0; i--) {
+        //Berechne die Endpunkte L und R mit Abstand d (=i)
         endpoints_t e = getEndpoints(p, i);
         vec_t vec = {(e.Rx - e.Lx)/width, (e.Ry - e.Ly)/width};
         
         for(int j = 0; j <= width; j++) {
             vec_t pos = {float_mod(e.Lx + j * vec.x, map_size), float_mod(e.Ly + j * vec.y, map_size)};
             
-            draw_line(c, (int) (pos.x * ((float) width)/(map_size - 1)), 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
+            draw_line(c, j, 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
         }
     }
 }
