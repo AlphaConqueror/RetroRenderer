@@ -128,14 +128,16 @@ void render(const player_t* p, ctx_t* c) {
         width = c->scr_width,
         distance = c->distance,
         map_size = c->map_size;
+    int heightAtPixel[width];
     
     //initializing screen in sky color
     for(int i = 1; i <= width; i++) {
         draw_line(c, i, 0, height, c->sky_color);
+        heightAtPixel[i - 1] = 0;
     }
     
     //für jede Entfernung d < D, absteigend
-    for(int i = distance - 1; i > 0; i--) {
+    for(int i = 1; i < distance; i++) {
         //Berechne die Endpunkte L und R mit Abstand d (=i)
         endpoints_t e = getEndpoints(p, i);
         vec_t vec = {(e.Rx - e.Lx)/(width - 1), (e.Ry - e.Ly)/(width - 1)};
@@ -143,7 +145,13 @@ void render(const player_t* p, ctx_t* c) {
         for(int j = 1; j <= width; j++) {
             vec_t pos = {float_mod(e.Lx + j * vec.x, map_size), float_mod(e.Ly + j * vec.y, map_size)};
             
-            draw_line(c, j, 0, (int) getDisplayedHeight(pos.x, pos.y, p, c, i), getColorAtCoords(pos.x, pos.y, c));
+            int displayedHeight = getDisplayedHeight(pos.x, pos.y, p, c, i),
+                minHeight = heightAtPixel[j - 1];
+            
+            if(minHeight < displayedHeight) {
+                draw_line(c, j, minHeight >= 0 ? minHeight : 0, displayedHeight, getColorAtCoords(pos.x, pos.y, c));
+                heightAtPixel[j - 1] = displayedHeight;
+            }
         }
     }
 }
