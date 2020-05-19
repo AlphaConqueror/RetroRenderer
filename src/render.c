@@ -158,5 +158,5 @@ void render(const player_t* p, ctx_t* c) {
 
 int bonus_implemented(void) {
     // TODO change to 1 if the bonus exercise is implemented.
-    return 0;
+    return 1;
 }
