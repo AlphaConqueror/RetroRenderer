@@ -148,7 +148,7 @@ void render(const player_t* p, ctx_t* c) {
             int displayedHeight = getDisplayedHeight(pos.x, pos.y, p, c, i),
                 minHeight = heightAtPixel[j - 1];
             
-            if(minHeight < displayedHeight) {
+            if(minHeight < displayedHeight && minHeight >= 0 && displayedHeight <= height) {
                 draw_line(c, j, minHeight >= 0 ? minHeight : 0, displayedHeight, getColorAtCoords(pos.x, pos.y, c));
                 heightAtPixel[j - 1] = displayedHeight;
             }
